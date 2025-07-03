@@ -1,40 +1,114 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import React from 'react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import db from "@/db/db";
+import { formatCurrency, formatNumber } from "@/lib/formatters";
+import React from "react";
 
-const AdminDashboard = () => {
-  return (
-    <div className='grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 grid'>
-        <Card>
-            <CardHeader>
-                <CardTitle>Products</CardTitle>
-                <CardDescription>Desc</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p>Content</p>
-            </CardContent>
-        </Card>
 
-         <Card>
-            <CardHeader>
-                <CardTitle>Products</CardTitle>
-                <CardDescription>Desc</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p>Content</p>
-            </CardContent>
-        </Card>
 
-         <Card>
-            <CardHeader>
-                <CardTitle>Products</CardTitle>
-                <CardDescription>Desc</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p>Content</p>
-            </CardContent>
-        </Card>
-    </div>
-  )
+const getSalesData = async()=>{
+    const data = await db.order.aggregate({
+        _sum: {pricePaidInCents: true},
+        _count: true
+    })
+    await wait(2000)
+    return {
+        amount : (data._sum.pricePaidInCents || 0) / 100,
+        numberOfSales : data._count || 0
+    }
 }
 
-export default AdminDashboard
+const getUserData = async()=>{
+
+  const [userCount, orderData] = await Promise.all([
+    db.user.count(),
+    db.order.aggregate({
+      _sum: {pricePaidInCents: true},
+    }),
+  ])
+ 
+  return {
+    userCount,
+    averageValuePerUser : userCount === 0 ? 0 : (orderData._sum.
+      pricePaidInCents || 0) / userCount /100
+  }
+
+}
+
+const getProductData = async()=>{
+
+ const [activeCount, inactiveCount] = await Promise.all([
+     db.product.count({
+    where:{isAvailableForPurchase : true}
+  }),
+     db.product.count({
+    where:{isAvailableForPurchase : false}
+  })
+  ])
+
+  return{
+    activeCount,
+    inactiveCount
+  }
+ 
+  
+}
+const wait  = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const AdminDashboard = async() => {
+
+  const [{amount, numberOfSales},
+     {userCount, averageValuePerUser},
+    {activeCount, inactiveCount} ] = await Promise.all([
+    // Fetch all data concurrently
+    getSalesData(),
+    getUserData(),
+    getProductData()
+  ])
+  return (
+    <div className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 grid">
+      <DashboardCard
+        title="Total Products"
+        description={`${formatNumber( numberOfSales)} Orders`}
+        content={formatCurrency(amount)}
+      />
+      <DashboardCard
+        title="Customer"
+        description={`${formatCurrency(averageValuePerUser)} AverageValue`}
+        content={formatNumber(userCount)}
+      />
+      <DashboardCard
+        title="Active Products"
+        description={`${formatNumber(inactiveCount)} inActive`}
+        content={`${formatNumber(activeCount)}`}
+      />
+    </div>
+  );
+};
+
+export default AdminDashboard;
+
+type DashboardCardProps = {
+  title: string;
+  description: string;
+  content: string;
+};
+
+function DashboardCard ({ title, description, content }: DashboardCardProps){
+    return (
+  <Card>
+    <CardHeader>
+      <CardTitle>{title}</CardTitle>
+      <CardDescription>{description}</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <p>{content}</p>
+    </CardContent>
+  </Card>
+    )
+};

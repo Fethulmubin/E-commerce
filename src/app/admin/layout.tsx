@@ -1,5 +1,7 @@
 import {Nav, NavLink} from "../components/Nav";
 
+
+export const dynamic = 'force-dynamic'; // This will disable caching for this layout
 export default function AdminLayout({children}: Readonly<{children: React.ReactNode}>) {
     return (
         <>
