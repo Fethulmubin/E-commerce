@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/formatters";
 import { error } from "console";
 import { useActionState } from "react";
 import { addProduct } from "../../_actions/products";
+import { redirect } from "next/navigation";
 
 const ProductForm = () => {
   const initialState = { success: false, errors: {} as Record<string, string> };
@@ -15,7 +16,18 @@ const ProductForm = () => {
     try {
       const result = await addProduct(formData);
 
-      return result
+     if (result && typeof result === "object" && !("success" in result)) {
+      return {
+        success: false,
+        // Flatten Zod field errors (e.g. { name: ["Required"] } → { name: "Required" })
+        errors: Object.fromEntries(
+          Object.entries(result).map(([key, value]) => [key, value?.[0] ?? "Invalid"])
+        ),
+      };
+    }
+   
+    return { success: true, errors: {} };
+
     } catch (error: any) {
       console.error("Error adding product:", error);
     }
@@ -56,7 +68,7 @@ const ProductForm = () => {
       </div>
 
       <Button className="mt-2" type="submit">
-        Save
+        {isPending ? 'Saving...': 'Save'}
       </Button>
     </form>
   );
