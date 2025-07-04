@@ -1,6 +1,7 @@
 "use server";
 
 import db from "@/db/db";
+import { parseServerActionResponse } from "@/lib/utils";
 import fs from "fs/promises";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -24,7 +25,13 @@ const addSchema = z.object({
 export const addProduct = async (formData: FormData) => {
   const result = addSchema.safeParse(Object.fromEntries(formData));
   if (!result.success) {
-    return result.error.formErrors.fieldErrors;
+    const flatErrors = Object.fromEntries(
+      Object.entries(result.error.formErrors.fieldErrors).map(([key, value]) => [
+        key,
+        value?.[0] ?? "Invalid",
+      ])
+    );
+    return { status: "ERROR", errors: flatErrors };
   }
 
   const data = result.data;
@@ -48,7 +55,7 @@ export const addProduct = async (formData: FormData) => {
     );
 
     // Save to database (now awaited)
-    await db.product.create({
+   const addedData =  await db.product.create({
       data: {
         name: data.name,
         description: data.description,
@@ -59,14 +66,20 @@ export const addProduct = async (formData: FormData) => {
       },
     });
 
-    
-    redirect("/admin/products");
+    return parseServerActionResponse({
+      ...addedData,
+      error: "",
+      status: "SUCCESS",
+    });
   } catch (error) {
     // Clean up uploaded files if something went wrong
     await fs.unlink(filePath).catch(() => {});
     await fs.unlink(`public${imagePath}`).catch(() => {});
 
     // Return error message
-    return { _form: ["Something went wrong. Please try again."] };
+     return parseServerActionResponse({
+      error: JSON.stringify(error),
+      status: "ERROR",
+    });
   }
 };

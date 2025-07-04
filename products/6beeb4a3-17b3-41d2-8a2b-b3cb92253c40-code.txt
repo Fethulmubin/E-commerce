@@ -1,0 +1,48 @@
+* Multi-stage BJT Amplifier Example
+* Filetype: CDDX (SPICE Netlist)
+
+* --- Power Supply ---
+V_VCC N_VCC N_GND DC 12V
+
+* --- Input Signal ---
+V_IN N_VIN_SRC N_GND SIN(0 1V 1kHz) ; For transient analysis
+* For AC analysis, uncomment the line below and comment the SIN line:
+*V_IN N_VIN_SRC N_GND AC 1V ; AC Magnitude 1V
+
+* --- Stage 1 (T1 - Common Emitter with Emitter Degeneration) ---
+C_C1 N_VIN_SRC N_BASE_T1 1uF
+R_R1 N_VCC N_BASE_T1 33k
+R_R4 N_BASE_T1 N_GND 10k
+Q_T1 N_COLL_T1 N_BASE_T1 N_EMIT_T1 QNPN ; Transistor T1
+R_R2 N_VCC N_COLL_T1 4.7k
+R_R7 N_EMIT_T1 N_GND 1k
+C_C3 N_EMIT_T1 N_GND 100uF
+
+* --- Coupling Capacitor ---
+C_C2 N_COLL_T1 N_BASE_T2 1uF
+
+* --- Stage 2 (T2 - Emitter Follower, with T3 as Active Load/Current Source) ---
+R_R3 N_VCC N_BASE_T2 10k
+Q_T2 N_VCC N_BASE_T2 N_EMIT_T2_COLL_T3 QNPN ; Transistor T2 (Emitter Follower)
+* T3 is configured as part of an active load or current source biasing
+R_RCD N_BASE_T2 N_BASE_T3 2.2k
+R_R5 N_BASE_T3 N_GND 1k
+Q_T3 N_EMIT_T2_COLL_T3 N_BASE_T3 N_GND QNPN ; Transistor T3
+
+* --- Output Coupling and Load ---
+C_C4 N_EMIT_T2_COLL_T3 N_OUTPUT 10uF
+R_R6 N_OUTPUT N_GND 10k
+
+* --- Transistor Model Definition ---
+.MODEL QNPN NPN (IS=1E-14 VAF=100 BF=150 IKF=0.3 XTB=1.5 BR=4 CJC=8PF CJE=25PF TR=100NS TF=400PS ITF=1 VTF=2 XTF=3 RB=10 RC=.3 RE=.2)
+* Use a specific model like 2N2222 if preferred:
+*.MODEL 2N2222 NPN(Is=14.34f Xti=3 Eg=1.11 Vaf=74.03 Bf=255.9 Ne=1.307 Ise=14.34f Ikf=.2847 Xtb=1.5 Br=6.092 Nc=2 Isc=0 Ikr=0 Rc=1 Cjc=7.306p Mjc=.3416 Vjc=.75 Fc=.5 Cje=22.01p Mje=.377 Vje=.75 Tr=46.91n Tf=411.1p Itf=.6 Vtf=1.7 Xtf=3 Rb=10)
+
+* --- Analysis Commands (Example) ---
+.OP ; DC Operating Point
+
+*.AC DEC 20 1Hz 1MHz ; AC Analysis: 20 points per decade, from 1Hz to 1MHz
+*.TRAN 1us 5ms ; Transient Analysis: 1us step, for 5ms duration
+
+* --- Control and End ---
+.END
