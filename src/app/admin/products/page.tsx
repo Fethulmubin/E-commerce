@@ -13,7 +13,8 @@ import {
 import db from "@/db/db";
 import { CheckCircle2, MoreVertical, XCircle } from "lucide-react";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import { ActiveToggleDropdownItem, DeleteDropdownItem } from "./_components/productActions";
 
 const AdminProductsPage = () => {
   return (
@@ -109,7 +110,10 @@ const ProductsTable = async () => {
                       Edit
                     </Link>
                   </DropdownMenuItem>
-                  
+                  <ActiveToggleDropdownItem id={product.id}
+                   isAvailableForPurchase={product.isAvailableForPurchase}/>
+                   <DropdownMenuSeparator/>
+                  <DeleteDropdownItem id={product.id} disabled={product._count.orders > 0} />
                 </DropdownMenuContent>
               </DropdownMenu>
               
