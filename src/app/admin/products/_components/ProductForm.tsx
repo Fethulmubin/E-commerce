@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import z from "zod";
 import { set } from "zod/v4";
 import { Product } from "@prisma/client";
+import Image from "next/image";
 
 const ProductForm = ({product} : {product : Product | null}) => {
   const router = useRouter();
@@ -84,6 +85,7 @@ const ProductForm = ({product} : {product : Product | null}) => {
       <div className="space-y-2">
         <Label htmlFor="file">File</Label>
         <Input  type="file" name="file" id="file" required = {product?.filePath == null} />
+        {product?.filePath != null && <div className="text-muted-foreground">{product?.filePath}</div>}
           {error.file && (
           <p className="text-red-400 text-[14px]">❌{error.file}</p>)}
       </div>
@@ -91,6 +93,7 @@ const ProductForm = ({product} : {product : Product | null}) => {
       <div className="space-y-2">
         <Label htmlFor="image">Image</Label>
         <Input  type="file" name="image" id="image" required = {product?.imagePath == null} />
+        {product?.imagePath != null && <Image className="" height={400} width={400} src={product?.imagePath} alt={product.name}/>}
         {error.image && (
           <p className="text-red-400 text-[14px]">❌{error.image}</p>
         )}
