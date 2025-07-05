@@ -27,10 +27,9 @@ export const addProduct = async (formData: FormData) => {
   const result = addSchema.safeParse(Object.fromEntries(formData));
   if (!result.success) {
     const flatErrors = Object.fromEntries(
-      Object.entries(result.error.formErrors.fieldErrors).map(([key, value]) => [
-        key,
-        value?.[0] ?? "Invalid",
-      ])
+      Object.entries(result.error.formErrors.fieldErrors).map(
+        ([key, value]) => [key, value?.[0] ?? "Invalid"]
+      )
     );
     return { status: "ERROR", errors: flatErrors };
   }
@@ -56,7 +55,7 @@ export const addProduct = async (formData: FormData) => {
     );
 
     // Save to database (now awaited)
-   const addedData =  await db.product.create({
+    const addedData = await db.product.create({
       data: {
         name: data.name,
         description: data.description,
@@ -78,61 +77,63 @@ export const addProduct = async (formData: FormData) => {
     await fs.unlink(`public${imagePath}`).catch(() => {});
 
     // Return error message
-     return parseServerActionResponse({
+    return parseServerActionResponse({
       error: JSON.stringify(error),
       status: "ERROR",
     });
   }
 };
 
-export const toggleProductAvailability = async (id : string, isAvailableForPurchase: boolean) =>{
+export const toggleProductAvailability = async (
+  id: string,
+  isAvailableForPurchase: boolean
+) => {
   try {
-    const result = await db.product.update({where: {id},
-       data: {isAvailableForPurchase} })
-      if(!result){
-        return parseServerActionResponse({
-          error: "Product not found",
-          status: "ERROR",
-        })
-      }
-       return parseServerActionResponse({
-        ...result,
-        error: "",
-        status: "SUCCESS",
+    const result = await db.product.update({
+      where: { id },
+      data: { isAvailableForPurchase },
+    });
+    if (!result) {
+      return parseServerActionResponse({
+        error: "Product not found",
+        status: "ERROR",
       });
-
+    }
+    return parseServerActionResponse({
+      ...result,
+      error: "",
+      status: "SUCCESS",
+    });
   } catch (error) {
     console.error("Error toggling product availability:", error);
     return parseServerActionResponse({
       error: JSON.stringify(error),
       status: "ERROR",
     });
-    
   }
-}
+};
 
-export const deleteProduct = async (id : string) =>{
+export const deleteProduct = async (id: string) => {
   try {
-    const result = await db.product.delete({where: {id} })
-      if(!result){
-        return parseServerActionResponse({
-          error: "Product not found",
-          status: "ERROR",
-        })
-      }
-       return parseServerActionResponse({
-        ...result,
-        error: "",
-        status: "SUCCESS",
+    const result = await db.product.delete({ where: { id } });
+    if (!result) {
+      return parseServerActionResponse({
+        error: "Product not found",
+        status: "ERROR",
       });
-
+    }
+    await fs.unlink(result.filePath);
+    await fs.unlink(`public${result.imagePath}`);
+    return parseServerActionResponse({
+      ...result,
+      error: "",
+      status: "SUCCESS",
+    });
   } catch (error) {
     console.error("Error toggling product availability:", error);
     return parseServerActionResponse({
       error: JSON.stringify(error),
       status: "ERROR",
     });
-    
   }
-}
-
+};

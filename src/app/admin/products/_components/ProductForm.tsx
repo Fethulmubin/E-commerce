@@ -12,8 +12,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import z from "zod";
 import { set } from "zod/v4";
+import { Product } from "@prisma/client";
 
-const ProductForm = () => {
+const ProductForm = ({product} : {product : Product | null}) => {
   const router = useRouter();
   const [error, setError] = useState<Record<string, string>>({});
   const [priceInCents, setPriceInCents] = useState('');
@@ -21,8 +22,9 @@ const ProductForm = () => {
     error: "",
     status: "INITIAL",
   };
-
+ 
   const handleFormSubmit = async (prevState: any, formData: FormData) => {
+    
     try {
       const result = await addProduct(formData);
       // If result contains field errors, set them
@@ -56,24 +58,24 @@ const ProductForm = () => {
     >
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
-        <Input type="text" id="name" name="name" required />
+        <Input defaultValue={product?.name} type="text" id="name" name="name" required />
         {error.name && <p className="text-red-400 text-[14px]">❌{error.name}</p>}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="priceInCents">PriceInCents</Label>
-        <Input type="text" name="priceInCents" id="priceInCents" value={priceInCents} onChange={(e) => setPriceInCents(e.target.value)} required />
+        <Input defaultValue={product?.priceInCents} type="text" name="priceInCents" id="priceInCents" onChange={(e) => setPriceInCents(e.target.value)} required />
         {error.priceInCents && (
           <p className="text-red-400 text-[14px]">❌{error.priceInCents}</p>
         )}
       </div>
       <div className="text-muted-foreground">
-        {formatCurrency(Number(priceInCents || 0) / 100)}
+        {formatCurrency(Number(priceInCents || product?.priceInCents || 0) / 100)}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
-        <Textarea name="description" id="description" required />
+        <Textarea defaultValue={product?.description} name="description" id="description" required />
         {error.description && (
           <p className="text-red-400 text-[14px]">❌{error.description}</p>
         )}
@@ -81,14 +83,14 @@ const ProductForm = () => {
 
       <div className="space-y-2">
         <Label htmlFor="file">File</Label>
-        <Input type="file" name="file" id="file" required />
+        <Input  type="file" name="file" id="file" required = {product?.filePath == null} />
           {error.file && (
           <p className="text-red-400 text-[14px]">❌{error.file}</p>)}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="image">Image</Label>
-        <Input type="file" name="image" id="image" required />
+        <Input  type="file" name="image" id="image" required = {product?.imagePath == null} />
         {error.image && (
           <p className="text-red-400 text-[14px]">❌{error.image}</p>
         )}
