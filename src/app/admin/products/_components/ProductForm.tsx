@@ -16,6 +16,7 @@ import { set } from "zod/v4";
 const ProductForm = () => {
   const router = useRouter();
   const [error, setError] = useState<Record<string, string>>({});
+  const [priceInCents, setPriceInCents] = useState('');
   const initialState = {
     error: "",
     status: "INITIAL",
@@ -61,13 +62,13 @@ const ProductForm = () => {
 
       <div className="space-y-2">
         <Label htmlFor="priceInCents">PriceInCents</Label>
-        <Input type="text" name="priceInCents" id="priceInCents" required />
+        <Input type="text" name="priceInCents" id="priceInCents" value={priceInCents} onChange={(e) => setPriceInCents(e.target.value)} required />
         {error.priceInCents && (
           <p className="text-red-400 text-[14px]">❌{error.priceInCents}</p>
         )}
       </div>
       <div className="text-muted-foreground">
-        {/* {formatCurrency(priceInCents || 0) / 100} */}
+        {formatCurrency(Number(priceInCents || 0) / 100)}
       </div>
 
       <div className="space-y-2">
@@ -93,7 +94,7 @@ const ProductForm = () => {
         )}
       </div>
 
-      <Button className="mt-2" type="submit">
+      <Button disabled={isPending} className="mt-2" type="submit">
         {isPending ? "Saving..." : "Save"}
       </Button>
     </form>

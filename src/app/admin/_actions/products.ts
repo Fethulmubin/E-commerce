@@ -5,6 +5,7 @@ import { parseServerActionResponse } from "@/lib/utils";
 import fs from "fs/promises";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { id } from "zod/v4/locales";
 
 const fileSchema = z.instanceof(File).refine((file) => file.size > 0, {
   message: "File is required",
@@ -83,3 +84,55 @@ export const addProduct = async (formData: FormData) => {
     });
   }
 };
+
+export const toggleProductAvailability = async (id : string, isAvailableForPurchase: boolean) =>{
+  try {
+    const result = await db.product.update({where: {id},
+       data: {isAvailableForPurchase} })
+      if(!result){
+        return parseServerActionResponse({
+          error: "Product not found",
+          status: "ERROR",
+        })
+      }
+       return parseServerActionResponse({
+        ...result,
+        error: "",
+        status: "SUCCESS",
+      });
+
+  } catch (error) {
+    console.error("Error toggling product availability:", error);
+    return parseServerActionResponse({
+      error: JSON.stringify(error),
+      status: "ERROR",
+    });
+    
+  }
+}
+
+export const deleteProduct = async (id : string) =>{
+  try {
+    const result = await db.product.delete({where: {id} })
+      if(!result){
+        return parseServerActionResponse({
+          error: "Product not found",
+          status: "ERROR",
+        })
+      }
+       return parseServerActionResponse({
+        ...result,
+        error: "",
+        status: "SUCCESS",
+      });
+
+  } catch (error) {
+    console.error("Error toggling product availability:", error);
+    return parseServerActionResponse({
+      error: JSON.stringify(error),
+      status: "ERROR",
+    });
+    
+  }
+}
+
