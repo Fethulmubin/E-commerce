@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
 import { useActionState, useState } from "react";
 // import { useToast } from "@/hooks/use-toast";
-import { addProduct } from "../../_actions/products";
+import { addProduct, updateProduct } from "../../_actions/products";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import z from "zod";
@@ -27,12 +27,22 @@ const ProductForm = ({product} : {product : Product | null}) => {
   const handleFormSubmit = async (prevState: any, formData: FormData) => {
     
     try {
-      const result = await addProduct(formData);
+      let result
+      if(product == null){
+        result = await addProduct(formData);
+      }
+      else{
+        result = await updateProduct( product.id, formData);
+      }
+    
       // If result contains field errors, set them
 
       if (result.status === "SUCCESS") {
         setError({});
-        toast.success("Product added successfully!");
+        toast.success(product == null ?
+          "Product added successfully" :
+          "Product updated successfully"
+        );
 
         router.push("/admin/products");
       }

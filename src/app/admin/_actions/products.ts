@@ -137,13 +137,14 @@ export const deleteProduct = async (id: string) => {
     });
   }
 };
-
+const editSchema = addSchema.extend({
+  file: z.instanceof(File).optional(),
+  image: z.instanceof(File).optional(),
+});
 export const updateProduct = async (id: string, formData: FormData) => {
-  const editSchema = addSchema.extend({
-    file : fileSchema.optional(),
-    image: imageSchema.optional(),
-  })
+  
   const result = editSchema.safeParse(Object.fromEntries(formData));
+
   if (!result.success) {
     const flatErrors = Object.fromEntries(
       Object.entries(result.error.formErrors.fieldErrors).map(
