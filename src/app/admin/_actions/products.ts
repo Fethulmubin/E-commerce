@@ -3,7 +3,7 @@
 import db from "@/db/db";
 import { parseServerActionResponse } from "@/lib/utils";
 import fs from "fs/promises";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 import { id } from "zod/v4/locales";
 
@@ -131,6 +131,78 @@ export const deleteProduct = async (id: string) => {
     });
   } catch (error) {
     console.error("Error toggling product availability:", error);
+    return parseServerActionResponse({
+      error: JSON.stringify(error),
+      status: "ERROR",
+    });
+  }
+};
+
+export const updateProduct = async (id: string, formData: FormData) => {
+  const editSchema = addSchema.extend({
+    file : fileSchema.optional(),
+    image: imageSchema.optional(),
+  })
+  const result = editSchema.safeParse(Object.fromEntries(formData));
+  if (!result.success) {
+    const flatErrors = Object.fromEntries(
+      Object.entries(result.error.formErrors.fieldErrors).map(
+        ([key, value]) => [key, value?.[0] ?? "Invalid"]
+      )
+    );
+    return { status: "ERROR", errors: flatErrors };
+  }
+
+  const data = result.data;
+  const product = await db.product.findUnique({ where: { id } });
+  if(product === null) {
+    return notFound();
+  }
+
+  //if the file or image is not provided, keep the existing paths
+  let filePath = product.filePath;
+  if(data.file != null && data.file.size > 0){
+      await fs.unlink(product.filePath).catch(() => {});
+      filePath = `products/${crypto.randomUUID()}-${data.file.name}`;
+      await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()));
+  }
+
+  let imagePath = product.imagePath;
+  if(data.image != null && data.image.size > 0){
+      await fs.unlink(`public${product.imagePath}`).catch(() => {});
+      imagePath = `/products/${crypto.randomUUID()}-${data.image.name}`;
+      await fs.writeFile(
+        `public${imagePath}`,
+        Buffer.from(await data.image.arrayBuffer())
+      );
+  }
+
+  try {
+
+    // Save to database (now awaited)
+    const updatedData = await db.product.update({
+      where: { id },
+      data: {
+        name: data.name,
+        description: data.description,
+        priceInCents: data.priceInCents,
+        filePath,
+        imagePath,
+        isAvailableForPurchase: false, // Consider adding this field
+      },
+    });
+
+    return parseServerActionResponse({
+      ...updatedData,
+      error: "",
+      status: "SUCCESS",
+    });
+  } catch (error) {
+    // Clean up uploaded files if something went wrong
+    await fs.unlink(filePath).catch(() => {});
+    await fs.unlink(`public${imagePath}`).catch(() => {});
+
+    // Return error message
     return parseServerActionResponse({
       error: JSON.stringify(error),
       status: "ERROR",
