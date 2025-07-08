@@ -8,3 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 export function parseServerActionResponse<T>(response: T) {
   return JSON.parse(JSON.stringify(response));
 }
+
+export function wait(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}

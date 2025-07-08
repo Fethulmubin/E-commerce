@@ -33,18 +33,22 @@ export default ProductCard
 
 export const ProductCardSkeleton = () => {
     return (
-        <Card className='flex overflow-hidden flex-col'>
-            <div className='relative w-full h-auto aspect-video bg-gray-200 animate-pulse rounded-lg'></div>
-            <CardHeader>
-                <CardTitle className='bg-gray-200 animate-pulse h-6 w-3/4'></CardTitle>
-                <CardDescription className='bg-gray-200 animate-pulse h-4 w-1/2'></CardDescription>
-            </CardHeader>
-            <CardContent className='flex-grow'>
-                <p className='line-clamp-4 bg-gray-200 animate-pulse h-16'></p>
-            </CardContent>
-            <CardFooter>
-                <Button size='lg' className='w-full bg-gray-200 animate-pulse h-10'></Button>
-            </CardFooter>
-        </Card>
+        <>
+            {[...Array(6)].map((_, i) => (
+                <Card key={i} className='flex overflow-hidden flex-col mb-4'>
+                    <div className='relative w-full h-auto aspect-video bg-gray-200 animate-pulse rounded-lg'></div>
+                    <CardHeader>
+                        <CardTitle className='bg-gray-200 animate-pulse h-6 w-3/4'></CardTitle>
+                        <CardDescription className='bg-gray-200 animate-pulse h-4 w-1/2'></CardDescription>
+                    </CardHeader>
+                    <CardContent className='flex-grow'>
+                        <p className='line-clamp-4 bg-gray-200 animate-pulse h-16'></p>
+                    </CardContent>
+                    <CardFooter>
+                        <Button size='lg' className='w-full bg-gray-200 animate-pulse h-10'></Button>
+                    </CardFooter>
+                </Card>
+            ))}
+        </>
     )
 }
