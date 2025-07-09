@@ -6,6 +6,8 @@ import Link from "next/link";
 import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
 import { Suspense } from "react";
 import { wait } from "@/lib/utils";
+ 
+export const revalidate = 60 * 60 * 6 // 6 hours
 
 const getNewestProducts = async () => {
   return await db.product.findMany({

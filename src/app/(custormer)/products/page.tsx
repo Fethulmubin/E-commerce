@@ -2,6 +2,8 @@ import ProductCard, { ProductCardSkeleton } from '@/app/components/ProductCard'
 import db from '@/db/db'
 import React, { Suspense } from 'react'
 
+export const revalidate = 60 * 60 * 6 // 6 hours
+
 const getProducts = async () => {
     return await db.product.findMany({
         where: { isAvailableForPurchase: true },
