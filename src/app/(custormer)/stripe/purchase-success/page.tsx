@@ -43,10 +43,22 @@ const PurchaseSuccess = async({searchParams} : {searchParams : Promise<{payment_
             </div>
         </div>
         <Button className='mt-4' size='lg' asChild>
-            {isSuccess ? <a></a> : <Link href={`/products/${product.id}/purchase`}>Try Again</Link>}
+            {isSuccess ? <a href={`/products/download/${await createDownloadVerification(product.id)}`} >Download</a> :
+             <Link href={`/products/${product.id}/purchase`}>Try Again</Link>}
         </Button>
     </div>
   );
 };
 
 export default PurchaseSuccess
+
+const createDownloadVerification = async(productId : string)=> {
+    return (
+        await db.downloadVerification.create({
+            data: {
+                productId,
+                expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24)
+            }
+        })
+    ).id
+}
