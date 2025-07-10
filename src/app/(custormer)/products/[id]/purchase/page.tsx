@@ -6,7 +6,9 @@ import CheckoutForm from '../_components/CheckoutForm'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
 
-const PurchasePage = async({params : {id}}: {params : {id : string}}) => {
+const PurchasePage = async({params }: {params : Promise<{id: string}>}) => {
+
+  const id = (await params).id
   const product = await db.product.findUnique({where: {id}})
   if(!product){
     return notFound()
