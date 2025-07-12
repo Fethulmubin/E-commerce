@@ -210,3 +210,19 @@ export const updateProduct = async (id: string, formData: FormData) => {
     });
   }
 };
+
+export const deleteUser = async (id: string) => {
+  try {
+    const result = await db.user.delete({
+      where: { id },
+    })
+    if ( result === null){
+      return notFound()
+
+    }
+    return result
+  } catch (error) {
+    
+    
+  }
+}
