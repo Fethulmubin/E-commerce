@@ -11,10 +11,19 @@ const resend = new Resend(process.env.RESEND_API_KEY as string);
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
 
 export async function POST(req: NextRequest){
-    const event = stripe.webhooks.
-    constructEvent(await req.text(),
- req.headers.get('stripe-signature') as string,
-  process.env.STRIPE_WEBHOOK_SECRET as string)
+
+let event: Stripe.Event;
+
+try {
+  const body = await req.text();
+  const signature = req.headers.get("stripe-signature") as string;
+
+  event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET as string);
+} catch (err) {
+  console.error("Webhook signature verification failed:", err);
+  return new NextResponse("Webhook error", { status: 400 });
+}
+
 
   if(event.type === 'charge.succeeded'){
     const charge = event.data.object
@@ -29,18 +38,20 @@ export async function POST(req: NextRequest){
 
     const userFields = {
         email, 
-        Orders: {create: {
+        orders: {create: {
             productId,
             pricePaidInCents
         }}
     }
 
-   db.user.upsert({
-    where: { email },
-    create: userFields,
-    update: userFields,
-    select: {orders : {orderBy: {createdAt: 'desc'}, take: 1}}
-})
+const savedUser = await db.user.upsert({
+  where: { email },
+  create: userFields,
+  update: userFields,
+});
+
+console.log("Saved User:", savedUser);
+
 const downloadVerification = await db.downloadVerification.create({
     data: {
         productId,

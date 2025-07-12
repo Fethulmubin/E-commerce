@@ -3,6 +3,8 @@ import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
+import { deleteUser } from "../../_actions/user";
+// import { deleteUser } from "../../_actions/products";
 
 export function DeleteDropdownItem({ id }: { id: string }) {
   const [isPending, startTransition] = useTransition();

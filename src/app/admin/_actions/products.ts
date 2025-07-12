@@ -142,7 +142,6 @@ const editSchema = addSchema.extend({
   image: z.instanceof(File).optional(),
 });
 export const updateProduct = async (id: string, formData: FormData) => {
-  
   const result = editSchema.safeParse(Object.fromEntries(formData));
 
   if (!result.success) {
@@ -156,30 +155,29 @@ export const updateProduct = async (id: string, formData: FormData) => {
 
   const data = result.data;
   const product = await db.product.findUnique({ where: { id } });
-  if(product === null) {
+  if (product === null) {
     return notFound();
   }
 
   //if the file or image is not provided, keep the existing paths
   let filePath = product.filePath;
-  if(data.file != null && data.file.size > 0){
-      await fs.unlink(product.filePath).catch(() => {});
-      filePath = `products/${crypto.randomUUID()}-${data.file.name}`;
-      await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()));
+  if (data.file != null && data.file.size > 0) {
+    await fs.unlink(product.filePath).catch(() => {});
+    filePath = `products/${crypto.randomUUID()}-${data.file.name}`;
+    await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()));
   }
 
   let imagePath = product.imagePath;
-  if(data.image != null && data.image.size > 0){
-      await fs.unlink(`public${product.imagePath}`).catch(() => {});
-      imagePath = `/products/${crypto.randomUUID()}-${data.image.name}`;
-      await fs.writeFile(
-        `public${imagePath}`,
-        Buffer.from(await data.image.arrayBuffer())
-      );
+  if (data.image != null && data.image.size > 0) {
+    await fs.unlink(`public${product.imagePath}`).catch(() => {});
+    imagePath = `/products/${crypto.randomUUID()}-${data.image.name}`;
+    await fs.writeFile(
+      `public${imagePath}`,
+      Buffer.from(await data.image.arrayBuffer())
+    );
   }
 
   try {
-
     // Save to database (now awaited)
     const updatedData = await db.product.update({
       where: { id },
@@ -211,18 +209,4 @@ export const updateProduct = async (id: string, formData: FormData) => {
   }
 };
 
-export const deleteUser = async (id: string) => {
-  try {
-    const result = await db.user.delete({
-      where: { id },
-    })
-    if ( result === null){
-      return notFound()
 
-    }
-    return result
-  } catch (error) {
-    
-    
-  }
-}
