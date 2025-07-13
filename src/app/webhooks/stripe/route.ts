@@ -3,8 +3,9 @@ import db from "@/db/db";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { Resend } from "resend";
-import { Order } from "@prisma/client";
 import React from "react";
+import { Order } from "@prisma/client";
+import PurchaseReceipt from "@/email/PurchaseReceipt";
 
 const resend = new Resend(process.env.RESEND_API_KEY as string);
 
@@ -44,13 +45,13 @@ try {
         }}
     }
 
-const savedUser = await db.user.upsert({
+const {orders: [order],} = await db.user.upsert({
   where: { email },
   create: userFields,
   update: userFields,
+  select: {orders : {orderBy: {createdAt: 'desc'}, take: 1}}
 });
 
-console.log("Saved User:", savedUser);
 
 const downloadVerification = await db.downloadVerification.create({
     data: {
@@ -63,7 +64,11 @@ await resend.emails.send({
     from :`Support <${process.env.SENDER_EMAIL}>`,
     to: email,
     subject: 'Your purchase was successful',
-    react: <PurchaseRecipent/>
+    react: React.createElement(PurchaseReceipt, {
+      order,
+      product,
+      downloadVerificationId: downloadVerification.id
+    })
 })
   }
   return new NextResponse()
