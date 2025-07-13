@@ -11,12 +11,6 @@ type PurchaseReceiptProps = {
     downloadVerificationId: string;
 }
 
-PurchaseReceipt.PreviewProps = {
-    product: {name : 'Sample Product', imagePath: 'path/to/image.jpg', description: 'This is a sample product'},
-    order: {id: '12345', createdAt: new Date(), pricePaidInCents: 1999},
-    downloadVerificationId: 'abc123'
-}satisfies PurchaseReceiptProps
-
 export default function PurchaseReceipt({product, order, downloadVerificationId}: PurchaseReceiptProps){
     return (
         <Html>

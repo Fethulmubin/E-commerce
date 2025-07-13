@@ -1,3 +1,5 @@
+"use server";
+
 import db from "@/db/db";
 import { parseServerActionResponse } from "@/lib/utils";
 import { notFound } from "next/navigation";
