@@ -63,7 +63,7 @@ await resend.emails.send({
     from :`Support <${process.env.SENDER_EMAIL}>`,
     to: email,
     subject: 'Your purchase was successful',
-    react: `<h1>Thank you for your purchase!</h1>`
+    react: <PurchaseRecipent/>
 })
   }
   return new NextResponse()

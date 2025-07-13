@@ -16,7 +16,7 @@ export function DeleteDropdownItem({ id }: { id: string }) {
         startTransition(async () => {
           const result = await deleteUser(id);
           if (result.status === "SUCCESS") {
-            toast.success("Product deleted successfully!");
+            toast.success("User deleted successfully!");
             router.refresh(); // Refresh the page to reflect changes
           } else if (result.status === "ERROR") {
             toast.error(`Error deleting product: ${result.error}`);
