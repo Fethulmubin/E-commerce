@@ -16,6 +16,7 @@ export async function emailOrderHistory(prevState: unknown,
         if(result.success === false) {
             return { error: "Invalid email format"};
         }
+        //getting user from db with al of its orders and products
         const user = await db.user.findUnique({
             where: { email: result.data },
             select: {
